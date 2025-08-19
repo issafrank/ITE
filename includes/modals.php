@@ -1,46 +1,52 @@
 <!-- My Profile Modal -->
-<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+<div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="profileModalLabel">Employee Information</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Employee Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <div class="row">
-                    <!-- Personal Information -->
-                    <div class="col-md-8">
-                        <h6 class="text-muted">Personal Information</h6>
-                        <table class="table table-borderless">
-                            <tbody>
-                                <tr>
-                                    <th scope="row" style="width: 120px;">Full Name:</th>
-                                    <td>Juan Dela Cruz</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Position:</th>
-                                    <td>Pharmacist</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Location:</th>
-                                    <td>Manila</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Email:</th>
-                                    <td>juan@nordlich.com</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Status:</th>
-                                    <td><span class="badge bg-success">Active</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- Employee Photo -->
-                    <div class="col-md-4 text-center">
-                        <img src="https://placehold.co/150x150/e1f0e5/237ab7?text=Photo" alt="Employee Photo" class="img-thumbnail mb-2">
-                        <p class="text-muted small">Employee Photo</p>
-                        <button class="btn btn-sm btn-secondary mt-2" data-bs-toggle="modal" data-bs-target="#changePhotoModal"><i class="bi bi-camera me-1"></i> Change Photo</button>
+                <div id="profileSpinner" class="text-center">
+                    <div class="spinner-border" role="status"></div>
+                </div>
+                <div id="profileContent" class="d-none">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="text-muted">Personal Information</h6>
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" style="width: 120px;">Full Name:</th>
+                                        <td id="profileFullName"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Position:</th>
+                                        <td id="profilePosition"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Department:</th>
+                                        <td id="profileDepartment"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Location:</th>
+                                        <td id="profileArea"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Email:</th>
+                                        <td id="profileEmail"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Status:</th>
+                                        <td><span id="profileStatus" class="badge"></span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <img id="profilePhoto" src="assets/images/default-avatar.png" alt="Employee Photo" class="img-thumbnail mb-2" style="width: 150px; height: 150px; object-fit: cover;">
+                            <button class="btn btn-sm btn-secondary mt-2" data-bs-toggle="modal" data-bs-target="#changePhotoModal"><i class="bi bi-camera me-1"></i> Change Photo</button>
+                        </div>
                     </div>
                 </div>
             </div>

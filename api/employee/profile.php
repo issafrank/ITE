@@ -1,14 +1,17 @@
 <?php
-// get_profile.php
-require 'db_connect.php';
 session_start();
-$employee_id = $_SESSION['employee_id'] ?? 12;
+require '../db_connect.php';
+header('Content-Type: application/json');
 
-// Query database
-$sql = "SELECT full_name, email, position, area, status 
-        FROM employees 
-        WHERE id = ?";
-$stmt = $conn->prepare($sql);
+$employee_id = $_SESSION['employee_id'] ?? 1;
+
+$stmt = $conn->prepare(
+    "SELECT e.full_name, e.email, e.area, e.status, e.photo_path, p.title as position, d.name as department
+     FROM employees e
+     LEFT JOIN positions p ON e.position_id = p.id
+     LEFT JOIN departments d ON p.department_id = d.id
+     WHERE e.id = ?"
+);
 $stmt->bind_param("i", $employee_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -19,9 +22,6 @@ if ($result->num_rows === 0) {
 }
 
 $profile = $result->fetch_assoc();
-
-// Return JSON
-header('Content-Type: application/json');
 echo json_encode($profile);
 
 $stmt->close();

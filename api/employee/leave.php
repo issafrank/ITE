@@ -1,164 +1,69 @@
 <?php
 session_start();
-// Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "nordlich";
+require '../db_connect.php';
+header('Content-Type: application/json');
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) die("Database connection failed: " . $conn->connect_error);
+$employee_id = $_SESSION['employee_id'] ?? 1;
+$action = $_GET['action'] ?? '';
 
-$employee_id = 1; // Replace with $_SESSION['employee_id'] in production
+switch ($action) {
+    case 'get_leave_history':
+        $stmt = $conn->prepare(
+            "SELECT lr.date_from, lr.date_to, lr.days, lr.reason, lr.status, lt.name as leave_type
+             FROM leave_requests lr
+             JOIN leave_types lt ON lr.leave_type_id = lt.id
+             WHERE lr.employee_id = ?
+             ORDER BY lr.date_from DESC"
+        );
+        $stmt->bind_param("i", $employee_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $history = $result->fetch_all(MYSQLI_ASSOC);
+        echo json_encode($history);
+        break;
 
-// Messages from leave.php
-$success_message = isset($_GET['success']) ? $_GET['success'] : '';
-$error_message = isset($_GET['error']) ? $_GET['error'] : '';
+    case 'file_leave':
+        $input = json_decode(file_get_contents('php://input'), true);
 
-// Fetch leave history
-$history = [];
-$stmt = $conn->prepare("SELECT leave_type, start_date, end_date, days, status, reason FROM leave_requests WHERE employee_id = ? ORDER BY start_date DESC");
-$stmt->bind_param("i", $employee_id);
-$stmt->execute();
-$result = $stmt->get_result();
-while ($row = $result->fetch_assoc()) $history[] = $row;
+        if (empty($input['leaveTypeId']) || empty($input['startDate']) || empty($input['endDate']) || empty($input['reason'])) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'All fields are required.']);
+            exit;
+        }
+
+        try {
+            $start = new DateTime($input['startDate']);
+            $end = new DateTime($input['endDate']);
+            if ($start > $end) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Start date cannot be after the end date.']);
+                exit;
+            }
+            $days = $end->diff($start)->format("%a") + 1;
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Invalid date format provided.']);
+            exit;
+        }
+
+        $stmt = $conn->prepare(
+            "INSERT INTO leave_requests (employee_id, leave_type_id, date_from, date_to, days, reason, status)
+             VALUES (?, ?, ?, ?, ?, ?, 'Pending')"
+        );
+        $stmt->bind_param("iissds", $employee_id, $input['leaveTypeId'], $input['startDate'], $input['endDate'], $days, $input['reason']);
+
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Leave request submitted!']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
+        }
+        break;
+
+    default:
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'Unknown API action requested.']);
+}
+
 $stmt->close();
 $conn->close();
-?>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8" />
-    <title>My Leave | Employee Portal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-</head>
-
-<body>
-    <div class="container mt-5">
-        <h1 class="mb-4">My Leave</h1>
-        <!-- Leave Credits (hardcoded for demo) -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card p-3"><strong>Vacation:</strong> 10/10</div>
-            </div>
-            <div class="col-md-3">
-                <div class="card p-3"><strong>Sick:</strong> 10/10</div>
-            </div>
-            <div class="col-md-3">
-                <div class="card p-3"><strong>Paternity:</strong> 7/7</div>
-            </div>
-            <div class="col-md-3">
-                <div class="card p-3"><strong>Maternity:</strong> 105/105</div>
-            </div>
-        </div>
-        <!-- Success/Error Message -->
-        <?php if ($success_message): ?>
-            <div class="alert alert-success"><?= htmlspecialchars($success_message) ?></div>
-        <?php endif; ?>
-        <?php if ($error_message): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($error_message) ?></div>
-        <?php endif; ?>
-        <!-- Button to open modal -->
-        <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#leaveRequestModal">File a New Leave Request</button>
-        <!-- Leave Request History Table -->
-        <div class="card mb-5">
-            <div class="card-header">
-                <h5 class="mb-0">Leave Request History</h5>
-            </div>
-            <div class="card-body p-0">
-                <table class="table mb-0">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Dates</th>
-                            <th>Days</th>
-                            <th>Status</th>
-                            <th>Reason</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($history): ?>
-                            <?php foreach ($history as $leave): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($leave['leave_type']) ?></td>
-                                    <td>
-                                        <?= htmlspecialchars(date('M d, Y', strtotime($leave['start_date']))) ?>
-                                        to
-                                        <?= htmlspecialchars(date('M d, Y', strtotime($leave['end_date']))) ?>
-                                    </td>
-                                    <td><?= htmlspecialchars($leave['days']) ?></td>
-                                    <td>
-                                        <span class="badge <?=
-                                                            $leave['status'] == 'Approved' ? 'bg-success' : ($leave['status'] == 'Pending' ? 'bg-warning text-dark' : 'bg-danger') ?>">
-                                            <?= htmlspecialchars($leave['status']) ?>
-                                        </span>
-                                    </td>
-                                    <td><?= htmlspecialchars($leave['reason']) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="5" class="text-center text-muted">No leave history.</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <!-- Leave Request Modal -->
-    <div class="modal fade" id="leaveRequestModal" tabindex="-1" aria-labelledby="leaveRequestModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <form method="POST" action="leave.php">
-                    <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title" id="leaveRequestModalLabel">New Leave Request</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="file_leave" value="1">
-                        <div class="mb-3">
-                            <label for="leaveTypeModal" class="form-label">Leave Type</label>
-                            <select class="form-select" id="leaveTypeModal" name="leaveType" required>
-                                <option value="">Select leave type...</option>
-                                <option value="Vacation">Vacation Leave</option>
-                                <option value="Sick">Sick Leave</option>
-                                <option value="Bereavement">Bereavement Leave</option>
-                                <option value="Maternity">Maternity Leave</option>
-                                <option value="Paternity">Paternity Leave</option>
-                            </select>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="startDateModal" class="form-label">Start Date</label>
-                                <input type="date" class="form-control" id="startDateModal" name="startDate" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="endDateModal" class="form-label">End Date</label>
-                                <input type="date" class="form-control" id="endDateModal" name="endDate" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="reasonModal" class="form-label">Reason</label>
-                            <textarea class="form-control" id="reasonModal" name="reason" rows="3" required></textarea>
-                        </div>
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle me-2"></i>
-                            Your request will be reviewed by HR. You'll receive a notification once processed.
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-success">
-                            Submit Request
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-
-</html>
