@@ -1,5 +1,5 @@
 <!-- My Attendance View -->
-<div id="attendance-view" class="view active">
+<div id="attendance-view" class="view">
   <h1 class="h2 mb-4">My Attendance</h1>
   <div class="card shadow-sm">
     <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center">

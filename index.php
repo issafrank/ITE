@@ -1,6 +1,9 @@
+<?php
+// Start the session at the very beginning of the main file
+session_start(); 
+?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <title>Nordlich Employee Panel</title>
@@ -9,12 +12,12 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
   <link href="assets/css/style.css" rel="stylesheet" />
 </head>
-
 <body>
   <?php require 'includes/sidebar.php'; ?>
   <?php require 'includes/navbar.php'; ?>
 
   <main class="main-content">
+    <?php require 'page/dashboard-view.php'; ?>
     <?php require 'page/attendance-view.php'; ?>
     <?php require 'page/leave-view.php'; ?>
   </main>
@@ -23,6 +26,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="assets/js/script.js"></script>
+  <script src="assets/js/employee.js"></script>
+  <script src="assets/js/dashboard.js"></script>
 </body>
-
 </html>
