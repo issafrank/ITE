@@ -136,9 +136,8 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary" id="submitLeaveButton">
-            <span class="submit-text">Submit Request</span>
-            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-          </button>
+    <span class="submit-text">Submit Request</span>
+    </button>
         </div>
       </form>
     </div>

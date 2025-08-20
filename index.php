@@ -23,10 +23,10 @@ session_start();
   </main>
 
   <?php require 'includes/modals.php'; ?>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/js/script.js"></script>
-  <script src="assets/js/employee.js"></script>
-  <script src="assets/js/dashboard.js"></script>
+  <script src="assets/js/app.js"></script>
+<script src="assets/js/dashboard.js"></script>
+<script src="assets/js/employee.js"></script>
 </body>
 </html>
