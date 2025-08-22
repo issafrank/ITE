@@ -1,6 +1,6 @@
 -- phpMyAdmin SQL Dump
 -- version 5.2.1
--- Generation Time: Aug 21, 2025 at 10:00 AM
+-- Generation Time: Aug 22, 2025 at 10:00 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -99,25 +99,14 @@ INSERT INTO `employees` (`id`, `employee_code`, `full_name`, `email`, `position_
 (2, 'EMP-1002', 'Sofia Reyes', 'sofia.reyes@nordlich.ph', 2, 'Makati City', '2023-01-20'),
 (3, 'EMP-1003', 'Frank Gomez', 'frank.gomez@nordlich.ph', 3, 'Pasig City', '2024-05-10');
 
--- The password for 'employee' is 'password'
--- The password for 'hr' is 'password'
--- The password for 'frank' is 'frank001'
 INSERT INTO `users` (`id`, `employee_id`, `username`, `password_hash`, `role`) VALUES
 (1, 1, 'employee', '$2y$10$wAX8h.g1w3wL0DAp4A4h7uX66e.vhuAIw937F5r08m.xx93aY/tJ.', 'employee'),
 (2, 2, 'hr', '$2y$10$wAX8h.g1w3wL0DAp4A4h7uX66e.vhuAIw937F5r08m.xx93aY/tJ.', 'hr'),
 (3, 3, 'frank', '$2y$10$lU7i3N8L8a/AkO8.9fGj/uv.W2yR0.33gS/nxlcE9z87s3tT0LzI2', 'employee');
 
-INSERT INTO `attendance_logs` (`employee_id`, `log_date`, `time_in`, `time_out`, `status`) VALUES
-(1, '2025-08-20', '07:58:00', '17:02:00', 'On Time'),
-(2, '2025-08-20', '08:45:00', '17:50:00', 'Late'),
-(3, '2025-08-20', '08:01:00', '17:05:00', 'On Time'),
-(1, '2025-08-21', '08:05:00', '17:10:00', 'On Time'),
-(2, '2025-08-21', NULL, NULL, 'On Leave'),
-(3, '2025-08-21', '09:05:00', '18:00:00', 'Late');
-
 INSERT INTO `leave_types` (`id`, `name`) VALUES (1, 'Vacation'),(2, 'Sick'),(3, 'Paternity'),(4, 'Maternity'),(5, 'Bereavement');
 INSERT INTO `leave_credits` (`employee_id`, `leave_type_id`, `balance`) VALUES 
-(1, 1, 12.0), (1, 2, 9.0), (1, 3, 7.0), (1, 5, 3.0),
+(1, 1, 12.0), (1, 2, 9.0), (1, 3, 7.0), (1, 4, 105.0), (1, 5, 3.0),
 (2, 1, 10.0), (2, 2, 10.0), (2, 4, 105.0), (2, 5, 3.0),
 (3, 1, 10.0), (3, 2, 10.0), (3, 3, 7.0), (3, 5, 3.0);
 

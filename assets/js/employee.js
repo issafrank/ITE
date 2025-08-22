@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const attendanceView = document.getElementById('attendance-view');
-    if (!attendanceView) return; // Exit if the attendance view isn't on the page
+    if (!attendanceView) return;
 
     const api = {
         attendance: '/Employee/api/employee/get_attendance.php'
@@ -10,8 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
         attendanceTableBody: document.querySelector('#attendance-view .table tbody'),
         monthFilter: document.getElementById('month-filter')
     };
-
-    const showAlert = window.showAlert || function(message, type) { alert(`${type}: ${message}`); };
 
     async function renderAttendance(month = null) {
         if (!elements.attendanceTableBody) return;
@@ -41,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } catch (error) {
             console.error('Error fetching attendance:', error);
-            showAlert('Error loading attendance.', 'danger');
+            window.showAlert('Error loading attendance.', 'danger');
         }
     }
 

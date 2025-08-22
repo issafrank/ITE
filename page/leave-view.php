@@ -1,33 +1,15 @@
 <?php
-// This PHP code will run on the server before the page is sent to the browser.
-// It assumes $conn is available because index.php requires 'api/db_connect.php'.
-$employee_id_for_credits = $_SESSION['employee_id'] ?? 1;
-$leave_credits = [];
-
-$sql_credits = "SELECT lt.name, lc.balance
-                FROM leave_credits lc
-                JOIN leave_types lt ON lc.leave_type_id = lt.id
-                WHERE lc.employee_id = ?";
-$stmt_credits = $conn->prepare($sql_credits);
-$stmt_credits->bind_param("i", $employee_id_for_credits);
-$stmt_credits->execute();
-$result_credits = $stmt_credits->get_result();
-
-// Use the required default total values
-$totals = ['Vacation' => 10, 'Sick' => 10, 'Paternity' => 7, 'Maternity' => 105, 'Bereavement' => 3];
-while ($row = $result_credits->fetch_assoc()) {
-  $leave_credits[$row['name']] = [
-    'balance' => $row['balance'],
-    'total' => $totals[$row['name']] ?? 0
-  ];
-}
-$stmt_credits->close();
+// Leave view (pure view file).
+// NOTE: index.php already starts the session and includes db_connect.php.
+// Do NOT call session_start() here to avoid "session already started" warnings.
 ?>
-
+<!-- My Leave View -->
 <div id="leave-view" class="view">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h2 mb-0">My Leave</h1>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#leaveRequestModal">File a New Leave Request</button>
+    <button type="button" class="btn btn-primary" style="background-color: #237ab7; border-color: #237ab7;" data-bs-toggle="modal" data-bs-target="#leaveRequestModal">
+      File a New Leave Request
+    </button>
   </div>
   <div class="row">
     <div class="col-12 mb-4">
@@ -36,44 +18,16 @@ $stmt_credits->close();
           <h5 class="mb-0">Leave Credits</h5>
         </div>
         <div class="card-body">
-          <!-- This section is now built by PHP and loads instantly -->
+          <!-- JavaScript will populate this container -->
           <div id="leave-credits-container" class="row">
-            <?php
-            $displayOrder = ['Vacation', 'Sick', 'Paternity', 'Maternity', 'Bereavement'];
-            $creditColors = ['Vacation' => '#237ab7', 'Sick' => '#ffc107', 'Paternity' => '#0dcaf0', 'Maternity' => '#0dcaf0', 'Bereavement' => '#6c757d'];
-
-            foreach ($displayOrder as $leaveType):
-              if (isset($leave_credits[$leaveType])):
-                $credit = $leave_credits[$leaveType];
-                $balance = floatval($credit['balance']);
-                $total = floatval($credit['total']);
-                $percentage = $total > 0 ? ($balance / $total) * 100 : 0;
-            ?>
+             <!-- Example:
                 <div class="col-md-6 mb-3">
-                  <div class="d-flex justify-content-between">
-                    <span><?php echo $leaveType; ?></span>
-                    <span class="fw-bold"><?php echo $balance; ?>/<?php echo $total; ?></span>
-                  </div>
+                  <div class="d-flex justify-content-between"><span>Vacation</span><span>7/10</span></div>
                   <div class="progress" style="height: 10px;">
-                    <div class="progress-bar" role="progressbar"
-                      style="width: <?php echo $percentage; ?>%; background-color: <?php echo $creditColors[$leaveType] ?? '#6c757d'; ?>;"
-                      aria-valuenow="<?php echo $balance; ?>" aria-valuemin="0" aria-valuemax="<?php echo $total; ?>"></div>
+                    <div class="progress-bar" role="progressbar" style="width: 70%; background-color: #237ab7;"></div>
                   </div>
                 </div>
-            <?php
-              endif;
-            endforeach;
-            ?>
-            <div class="col-md-6 mb-3 d-flex align-items-center">
-              <div class="row w-100">
-                <div class="col-6">
-                  <p class="mb-0"><span class="fw-bold">AWOL:</span> 0 days</p>
-                </div>
-                <div class="col-6">
-                  <p class="mb-0"><span class="fw-bold">Suspended:</span> 0 days</p>
-                </div>
-              </div>
-            </div>
+             -->
           </div>
         </div>
       </div>
@@ -97,7 +51,18 @@ $stmt_credits->close();
                   <th>Reason</th>
                 </tr>
               </thead>
-              <tbody><!-- This part will be populated by leave.js --></tbody>
+              <!-- JavaScript will populate this table body -->
+              <tbody id="leaveHistoryTableBody">
+                <!-- Example Row:
+                    <tr>
+                      <td>Vacation</td>
+                      <td>Jul 10-12, 2025</td>
+                      <td>3</td>
+                      <td><span class="badge bg-success">Approved</span></td>
+                      <td>Family Trip</td>
+                    </tr>
+                -->
+              </tbody>
             </table>
           </div>
         </div>
@@ -117,7 +82,7 @@ $stmt_credits->close();
         <div class="modal-body">
           <div class="mb-3">
             <label for="leaveTypeModal" class="form-label">Leave Type</label>
-            <select class="form-select" id="leaveTypeModal" required>
+            <select class="form-select" id="leaveTypeModal" name="leave_type_id" required>
               <option value="" disabled selected>Select...</option>
               <option value="1">Vacation</option>
               <option value="2">Sick</option>
@@ -127,10 +92,19 @@ $stmt_credits->close();
             </select>
           </div>
           <div class="row">
-            <div class="col-md-6 mb-3"><label for="startDateModal" class="form-label">Date From</label><input type="date" class="form-control" id="startDateModal" required></div>
-            <div class="col-md-6 mb-3"><label for="endDateModal" class="form-label">Date To</label><input type="date" class="form-control" id="endDateModal" required></div>
+            <div class="col-md-6 mb-3">
+              <label for="startDateModal" class="form-label">Date From</label>
+              <input type="date" class="form-control" id="startDateModal" name="date_from" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="endDateModal" class="form-label">Date To</label>
+              <input type="date" class="form-control" id="endDateModal" name="date_to" required>
+            </div>
           </div>
-          <div class="mb-3"><label for="reasonModal" class="form-label">Reason</label><textarea class="form-control" id="reasonModal" rows="3" required></textarea></div>
+          <div class="mb-3">
+            <label for="reasonModal" class="form-label">Reason</label>
+            <textarea class="form-control" id="reasonModal" name="reason" rows="3" required></textarea>
+          </div>
           <div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>Your request will be reviewed by HR.</div>
         </div>
         <div class="modal-footer">

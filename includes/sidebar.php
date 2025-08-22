@@ -4,7 +4,7 @@
   <nav class="nav flex-column pt-3">
     <a class="nav-link active" href="#" data-bs-target="#dashboard-view"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
     <a class="nav-link" href="#" data-bs-target="#attendance-view"><i class="bi bi-calendar-check"></i> My Attendance</a>
-    <a class="nav-link" href="#" data-bs-target="#leave-view"><i class="bi bi-card-list"></i> My Leave</a>
+    <a class="nav-link" href="#" data-bs-toggle="#leave-view" data-bs-target="#leave-view"><i class="bi bi-wallet2"></i> My Leave</a>
     <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#payslipModal"><i class="bi bi-wallet2"></i> My Payslip</a>
   </nav>
 </aside>

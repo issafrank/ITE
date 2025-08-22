@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
         inOutTabs: document.getElementById('inOutTabs')
     };
 
-    let teamMembers = []; // Store data locally for this module
+    let teamMembers = [];
 
     function renderTeamStatus(type = 'in') {
         const filtered = teamMembers.filter(m => m.status === type);
@@ -24,19 +24,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         filtered.forEach(member => {
-            // ... your team status rendering logic
+            const timeHTML = member.time ? `<div class="text-muted small">${member.status === 'in' ? 'In' : 'Out'}: ${member.time}</div>` : '';
+            elements.membersList.innerHTML += `
+                <div class="d-flex align-items-center mb-3">
+                    <img src="${member.img}" class="rounded-circle me-3" width="44" height="44">
+                    <div>
+                        <div class="fw-semibold">${member.name}</div>
+                        ${timeHTML}
+                    </div>
+                </div>`;
         });
     }
 
     function setupDashboardHandlers() {
-        elements.inOutTabs.addEventListener('click', function(e) {
-            if (e.target.tagName === 'BUTTON') {
-                elements.inOutTabs.querySelector('.active').classList.remove('active');
-                e.target.classList.add('active');
-                const activeType = e.target.getAttribute('data-type');
-                renderTeamStatus(activeType);
-            }
-        });
+        if (elements.inOutTabs) {
+            elements.inOutTabs.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON') {
+                    elements.inOutTabs.querySelector('.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    const activeType = e.target.getAttribute('data-type');
+                    renderTeamStatus(activeType);
+                }
+            });
+        }
     }
 
     async function initializeDashboard() {
@@ -46,17 +56,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             teamMembers = data.team_members || [];
-            elements.dashboardUsername.textContent = data.username || 'Employee';
+            if (elements.dashboardUsername) elements.dashboardUsername.textContent = data.username || 'Employee';
             
             renderTeamStatus('in');
             setupDashboardHandlers();
         } catch (error) {
             console.error('Error initializing dashboard:', error);
-            elements.membersList.innerHTML = `<div class="text-center text-danger py-3 small">Could not load data.</div>`;
+            if (elements.membersList) elements.membersList.innerHTML = `<div class="text-center text-danger py-3 small">Could not load data.</div>`;
         }
     }
 
-    // Listen for the custom event from app.js
     document.addEventListener('viewChanged', function(e) {
         if (e.detail.viewId === 'dashboard-view') {
             initializeDashboard();
